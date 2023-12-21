@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "scripts-happy"
+version = "0.0.0"
+description = "Collection of basic scripts to manage `dst` quilting programs for Happy quilting machines"
+authors = ["Rui Antunes <ruiantunes@jjlouro.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+
+[tool.poetry.group.dev.dependencies]
+bpython = "^0.24"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
