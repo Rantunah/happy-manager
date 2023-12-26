@@ -1,5 +1,6 @@
 ### Project ###
 dev/
+config.toml
 
 ### Python ###
 # Byte-compiled / optimized / DLL files

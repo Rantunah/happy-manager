@@ -8,9 +8,10 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.12"
-
-[tool.poetry.group.dev.dependencies]
-bpython = "^0.24"
+pyembroidery = "^1.5.0"
+pillow = "^10.1.0"
+tomli-w = "^1.0.0"
+wmi = "^1.5.1"
 
 [build-system]
 requires = ["poetry-core"]
