@@ -1,6 +1,7 @@
 """Handles all pattern specific data, files and objects"""
 import csv
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 from typing import Literal
 
@@ -14,13 +15,15 @@ FORMAT = "dst"
 
 @dataclass
 class Pattern:
-    name: str
     original_name: str
     number: int
     year: int
     size_kb: int | float
     hash: str
     flash_drive: str
+    # `name` has a default value to allow the factory to build the object without
+    # knowing it
+    name: str = "?"
 
     @classmethod
     def from_file(cls, file: Path, settings: Settings):
@@ -37,11 +40,9 @@ class Pattern:
         # `sort_files` depends on the name being numeric so it will raise an index error
         # if the latest file is not found, because of a wrong name format
         except IndexError:
-            number = 0
-        name = str(number).zfill(3) + str(year)
+            number = 1
 
         pattern = cls(
-            name=name,
             original_name=original_name,
             number=number,
             year=year,
@@ -50,18 +51,52 @@ class Pattern:
             flash_drive=settings.flash_drive_name,
         )
 
-        pattern.bump_pattern_number()
+        if not pattern.valid_numbers():
+            raise ValueError(
+                "`pattern.number` and/or `pattern.year` are not within \
+            expected ranges."
+            )
+
+        # Do nothing for the first pattern of a new year
+        pattern.name_from_numbers()
+        if pattern.number == 1:
+            pass
+        else:
+            pattern.bump_pattern_number()
 
         return pattern
+
+    def valid_numbers(self) -> bool:
+        """Checks if all the values for `number` and `year `fall within the expected
+        range."""
+
+        if not isinstance(self.number, int) or self.number not in range(1, 1000):
+            raise ValueError("`self.number` must be an integer between `1` and `999`")
+
+        # Check that the year is not larger than the present year or smaller than a
+        # reasonable number
+        year_today = datetime.now().date().year
+        REASONABLE_YEAR = 1997
+        if self.year > year_today or self.year < REASONABLE_YEAR:
+            raise ValueError(
+                f"`self.year` must be an integer between `{year_today}` and \
+                `{REASONABLE_YEAR}`"
+            )
+        return True
+
+    def name_from_numbers(self) -> str:
+        """Returns a `str` object from the `number` padded to 3 digits, concatenated
+        to the `year`."""
+        return str(self.number).zfill(3) + str(self.year)
 
     def bump_pattern_number(self) -> None:
         """Bumps `Pattern.number` by one digit and updates the `Pattern.name`."""
 
         self.number += 1
-        self.name = str(self.number).zfill(3) + str(self.year)
+        self.name = self.name_from_numbers()
 
     def to_csv_log(self, settings: Settings) -> bool:
-        """Manages a csv log of the inserted files and returns whsether creation or update
+        """Manages a csv log of the inserted files and returns whether creation or update
         was succsessful or not.\n
         The log is stored in the parent of the backups directory."""
 
@@ -103,14 +138,23 @@ def sort_key(file: Path, key: Literal["year", "number"]) -> tuple[int, int]:
     """Extracts the year and number from the file name for sorting.
     `key` defines wich one of the name's elements the file will be sorted by."""
 
+    # Serialize the filename into the correct number types
     base_name = file.stem
-    number = int(base_name[:3])
-    year = int(base_name[3:])
+    try:
+        number = int(base_name[:3])
+        year = int(base_name[3:])
+    # Set the numbers to `None` if the values are not compatible with `int`
+    except ValueError as e:
+        if str(e).startswith("invalid literal for int()"):
+            pass
+        number = None
+        year = None
 
-    if key == "year":
-        return year, number
-    elif key == "number":
-        return number, year
+    if year and number:
+        if key == "year":
+            return year, number
+        elif key == "number":
+            return number, year
     else:
         raise ValueError("`key` must be either 'year' or 'number'.")
 
@@ -120,6 +164,11 @@ def sort_files(
 ) -> list:
     """Returns the files list sorted by a specified key (`year` or `number`) and
     direction."""
+
+    # Filters out all the files which names are alphanumeric (only numbers allowed)
+    files = [
+        file for file in files if file.stem[:3].isdigit() and file.stem[3:].isdigit()
+    ]
 
     # `sorted` `key` only accepts a `Callable`, so a `lambda` is used as a wrapper for
     # `sort_key`
@@ -135,6 +184,7 @@ def latest_pattern(folder: Path, year: int | None = None) -> Path:
     if year:
         filtered_list = [file for file in files_list if int(file.stem[3:]) == year]
         files_list = filtered_list
+
     # Return only the first element of the list
     return sort_files(files_list, key="year", reverse=True)[0]
 

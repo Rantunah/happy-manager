@@ -9,12 +9,11 @@ from settings import Settings
 # Initialize settings or load them from file
 settings = Settings.from_file()
 
-# TODO: There is no way to check if the drive letter matches the preset drive name.
-# Force the user to pick a flash drive
-settings.flash_drive_dir = Path(filedialog.askdirectory(title="Select Flash Drive"))
-
 
 def main():
+    # TODO: There is no way to check if the drive letter matches the preset drive name.
+    # Force the user to pick a flash drive
+    settings.flash_drive_dir = Path(filedialog.askdirectory(title="Select Flash Drive"))
     new_file = Path(
         filedialog.askopenfilename(
             title="Select New Pattern File",

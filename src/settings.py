@@ -13,6 +13,7 @@ import wmi
 FILENAME = "config.toml"
 
 # Settings structure.
+# TODO: This Schema is very tighly coupled to `Settings` and it's tests to the point that the order of the keys and values is also checked
 SCHEMA = {
     "flash_drive": ["dir", "name"],
     "backup": ["dir"],
@@ -121,10 +122,10 @@ class Settings:
 
         try:
             # Create a `dict` based on `SCHEMA` with dummy values
-            # `toml` doesn't support `None` so `"_"` is used instead
+            # `toml` doesn't support `None` so `"?"` is used instead
             # TODO Comprehensions are faster, but maybe readability here is more important
             placeholder_settings = {
-                key: {value: "_" for value in values} for key, values in SCHEMA.items()
+                key: {value: "?" for value in values} for key, values in SCHEMA.items()
             }
             with open(FILENAME, "xb") as settings_file:
                 tomli_w.dump(placeholder_settings, settings_file)
