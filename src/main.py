@@ -55,6 +55,8 @@ def main():
                 ),
                 target_dir=settings.flash_drive_dir,
             )
+            # export an image of the new pattern to the previews folder
+            pattern.to_image(settings.preview_dir, format=settings.preview_format)
 
             # write the transaction to the csv log
             pattern.to_csv_log(settings)
