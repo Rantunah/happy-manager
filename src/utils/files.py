@@ -130,8 +130,22 @@ def get_data(file: Path) -> FileData:
     )
 
 
+# TODO: Extension is hardcoded here but should be moved into `config.toml` in case other extensions are ever supported
 def wipe_directory(dir: Path, extension: str = "dst") -> None:
     """Erase all the files of a specified extension in a directory"""
 
     for file in dir.glob(f"*.{extension}"):
         file.unlink()
+
+
+def is_appendable(file: Path) -> bool:
+    """Check if it's possible to append data to a file."""
+
+    try:
+        target_file = open(str(file), "a")
+    except PermissionError:
+        return False
+    else:
+        target_file.close()
+
+    return True
