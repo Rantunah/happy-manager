@@ -1,3 +1,11 @@
+# Import modules required for logging first
+import getpass
+
+from utils.logs import setup_file_logger
+
+username = getpass.getuser()
+system_logger = setup_file_logger(name="System", path="system.log")
+
 from pathlib import Path
 from tkinter import filedialog
 
@@ -6,8 +14,13 @@ import utils.files as files
 import utils.hashes as hashes
 from settings import Settings
 
+# Setup username fetching and loggers
+
 # Initialize settings or load them from file
 settings = Settings.from_file()
+
+# Set logging level to `INFO` or `DEBUG` according to `settings`
+system_logger.setLevel("DEBUG" if settings.logging_debug is True else "INFO")
 
 
 def main():
@@ -23,9 +36,18 @@ def main():
 
     pattern = patterns.Pattern.from_file(new_file, settings)
 
-    if not hashes.is_present(
+    duplicate_hashes: dict | bool = hashes.is_present(
         new_file, target_dir=settings.backup_dir, extension=patterns.FORMAT
-    ):
+    )
+    if duplicate_hashes:
+        # Get the first value in the first keys, {key: {key: value}}
+        duplicate = duplicate_hashes[next(iter(duplicate_hashes))].get(
+            next(iter(duplicate_hashes[next(iter(duplicate_hashes))]))
+        )[0]
+        system_logger.warning(
+            f"({username}) `{pattern.original_name}.{patterns.FORMAT}` has already been processed. Matches `{duplicate}`."
+        )
+    else:
         # Reset the count if there is no pattern in the list with the year
         if pattern.year not in patterns.list_present_years(settings.backup_dir):
             pattern.number = 0
@@ -59,7 +81,14 @@ def main():
             pattern.to_image(settings.preview_dir, format=settings.preview_format)
 
             # write the transaction to the csv log
-            pattern.to_csv_log(settings)
+            if not pattern.to_csv_log(settings):
+                system_logger.error(
+                    f"({username}) CSV record for `{pattern.name}.{patterns.FORMAT}` could not be "
+                    "updated because the file was not accessible."
+                )
+            system_logger.info(
+                f"({username}) Pattern `{pattern.original_name}.{patterns.FORMAT}` was processed successfully. Listed as `{pattern.name}.{patterns.FORMAT}`"
+            )
 
 
 if __name__ == "__main__":

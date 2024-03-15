@@ -10,7 +10,8 @@ class TestSettings:
 
         for attribute in settings_attributes:
             value = settings_attributes[attribute]
-            assert value
+            if isinstance(value, bool):
+                continue
             assert value != "?"
             assert value != "_"
             assert value != ""
@@ -26,3 +27,4 @@ class TestSettings:
         assert isinstance(settings.preview_format, str)
         assert isinstance(settings.sorting_key, str)
         assert isinstance(settings.sorting_reverse, bool)
+        assert isinstance(settings.logging_debug, bool)

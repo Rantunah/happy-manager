@@ -25,6 +25,9 @@ format = 'svg'
 [sorting]
 key = 'number'
 reverse = false
+
+[logging]
+debug = true
 """
 
     written_data = {}
@@ -80,6 +83,7 @@ def test_to_dict():
     settings.preview_format = "jpg"
     settings.sorting_key = "year"
     settings.sorting_reverse = False
+    settings.logging_debug = False
 
     settings_dict = settings.to_dict()
 
@@ -103,3 +107,4 @@ def test_from_file():
     assert settings.preview_format == "svg"
     assert settings.sorting_key == "number"
     assert settings.sorting_reverse is False
+    assert settings.logging_debug is True

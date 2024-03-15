@@ -1,4 +1,5 @@
 """Handles all pattern specific data, files and objects"""
+
 import csv
 from dataclasses import dataclass
 from datetime import datetime
@@ -159,6 +160,7 @@ class Pattern:
         # Context manager creates the file, so the check must happen before that
         csv_exists = csv_updates.exists()
         # Open the file to write the headders it it's new, otherwise, append data
+        # TODO: There is some code duplication here that could be handled more elegantly with a function to write to csv regardless of it's name
         try:
             with open(
                 csv_updates, mode="a" if csv_exists else "w", newline=""
@@ -185,7 +187,19 @@ class Pattern:
                 writer.writerow(row_data)
                 return True
 
+        # If the file is somehow inaccessable, write the data to a fallback csv
         except OSError:
+            csv_fallback = settings.backup_dir.parent / f"{self.name}.csv"
+            with open(csv_fallback, mode="x") as csv_file:
+                writer = csv.writer(csv_file)
+                row_data = [
+                    self.name,
+                    self.original_name,
+                    self.size_kb,
+                    self.hash,
+                    self.flash_drive,
+                ]
+                writer.writerow(row_data)
             return False
 
 

@@ -19,6 +19,7 @@ SCHEMA = {
     "backup": ["dir"],
     "preview": ["dir", "format"],
     "sorting": ["key", "reverse"],
+    "logging": ["debug"],
 }
 
 # TODO: Implement image export logic
@@ -40,6 +41,7 @@ class Settings:
         # TODO: `sorting_key` should be it's own type to reduce duplicate code
         self._sorting_key: Literal["number", "year"]
         self._sorting_reverse: bool
+        self._logging_debug: bool
 
     @property
     def flash_drive_dir(self) -> Path:
@@ -113,8 +115,18 @@ class Settings:
     @sorting_reverse.setter
     def sorting_reverse(self, value: bool):
         if not isinstance(value, bool):
-            raise ValueError("`sorting_reverse` must be either `True` of `False`")
+            raise ValueError("`sorting_reverse` must be either `True` or `False`")
         self._sorting_reverse = value
+
+    @property
+    def logging_debug(self) -> bool:
+        return self._logging_debug
+
+    @logging_debug.setter
+    def logging_debug(self, value: bool):
+        if not isinstance(value, bool):
+            raise ValueError("`logging_debug` must be either `True` or `False`")
+        self._logging_debug = value
 
     @staticmethod
     def create_file():
@@ -191,6 +203,7 @@ class Settings:
             settings.preview_format = settings_dict.get("preview", {}).get("format")
             settings.sorting_key = settings_dict.get("sorting", {}).get("key")
             settings.sorting_reverse = settings_dict.get("sorting", {}).get("reverse")
+            settings.logging_debug = settings_dict.get("logging", {}).get("debug")
         except ValueError:
             # TODO: The configuration wizard will remain a part of this module for the POC, but it should be moved to a GUI module.
             # Launch a small wizard to help the user choose the correct values
@@ -234,6 +247,9 @@ class Settings:
 
             # TODO: Make sorting direction selectable (hardcoded for POC)
             settings.sorting_reverse = True
+
+            # TODO: Make debug logging selectable (hardcoded for POC)
+            settings.logging_debug = False
 
             settings.update_file()
 
