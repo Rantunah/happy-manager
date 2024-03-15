@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "happy-man"
-version = "0.0.0"
+version = "0.1.0"
 description = "CNC Quilting design manager for HAPPY quilting machine."
 authors = ["Rui Antunes <ruiantunes@jjlouro.com>"]
 license = "MIT"
@@ -17,6 +17,9 @@ wmi = "^1.5.1"
 pytest = "^7.4.4"
 pyinstaller = "^6.3.0"
 pre-commit = "^3.6.0"
+
+[tool.ruff]
+ignore = ["E402"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
