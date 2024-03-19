@@ -1,5 +1,7 @@
 ### Project ###
 dev/
+config.toml
+.pre-commit-config.yaml
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
